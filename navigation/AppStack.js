@@ -1,0 +1,12 @@
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import { AuthenticatedUserContext } from "../providers";
+import { HomeScreen } from "../screens";
+const Stack = createStackNavigator();
+export const AppStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Home" component={Homes} />
+    </Stack.Navigator>
+  );
+};
