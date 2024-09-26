@@ -1,16 +1,17 @@
 import React, { useState } from "react";
-import { Text, StyleSheet } from "react-native";
+import { Text, StyleSheet, Alert } from "react-native";
 import { Formik } from "formik";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig"; // Add db from firebaseConfig
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, sendEmailVerification,
 } from "firebase/auth";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scrollview";
 import { View, TextInput, Logo, Button, FormErrorMessage } from "../components";
 import { Images, Colors } from "../config";
 import { useTogglePasswordVisibility } from "../hooks";
 import { signupValidationSchema } from "../utils";
+import { doc, setDoc } from "firebase/firestore"; // Import Firestore
+
 export const SignupScreen = ({ navigation }) => {
   const [errorState, setErrorState] = useState("");
   const {
@@ -21,25 +22,38 @@ export const SignupScreen = ({ navigation }) => {
     confirmPasswordIcon,
     confirmPasswordVisibility,
   } = useTogglePasswordVisibility();
+
   const handleSignup = async (values) => {
-    const { email, password } = values;
+    const { fullName, email, password, phone, address } = values;
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      navigation.navigate("Home");
+      // Tạo tài khoản người dùng với Firebase Authentication
+      const response = await createUserWithEmailAndPassword(auth, email, password);
+  
+      // Gửi email xác nhận sau khi tạo tài khoản thành công
+      await sendEmailVerification(response.user);
+  
+      // Lưu thông tin người dùng vào Firestore
+      const userRef = doc(db, "USERS", response.user.uid);
+      await setDoc(userRef, {
+        fullName,
+        email,
+        phone,
+        address,
+        role: "customer"
+      });
+  
+      // Thông báo cho người dùng về việc cần xác thực email
+      Alert.alert("Thông báo", "Vui lòng xác nhận email của bạn qua liên kết đã được gửi.");
+  
+      // Chuyển hướng đến màn hình đăng nhập
+      navigation.navigate("Login");
     } catch (error) {
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          setErrorState("This email is already in use.");
-          break;
-        case "auth/weak-password":
-          setErrorState("Password is too weak, must be at least 6 characters.");
-          break;
-        case "auth/invalid-email":
-          setErrorState("Invalid email format.");
-          break;
-        default:
-          setErrorState("An error occurred during sign-up.");
-          break;
+      // Xử lý lỗi, ví dụ email đã tồn tại
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert("Thông báo", "Email đã tồn tại. Vui lòng chọn email khác.");
+      } else {
+        Alert.alert("Thông báo", "Có lỗi xảy ra. Vui lòng thử lại.");
+        console.log(error)
       }
     }
   };
@@ -49,13 +63,16 @@ export const SignupScreen = ({ navigation }) => {
       <KeyboardAwareScrollView enableOnAndroid={true}>
         {/* LogoContainer: consits app logo and screen title */}
         <View style={styles.logoContainer}>
-          <Logo uri={Images.logo} />
-          <Text style={styles.screenTitle}>Create a new account!</Text>
+          {/* <Logo uri={Images.logo} /> */}
+          <Text style={styles.screenTitle}>Tạo tài khoản mới!</Text>
         </View>
         {/* Formik Wrapper */}
         <Formik
           initialValues={{
+            fullName: "",
             email: "",
+            phone: "",
+            address: "",
             password: "",
             confirmPassword: "",
           }}
@@ -71,24 +88,59 @@ export const SignupScreen = ({ navigation }) => {
             handleBlur,
           }) => (
             <>
-              {/* Input fields */}
+              {/* Full Name Field */}
+              <TextInput
+                name="fullName"
+                leftIconName="account"
+                placeholder="Nhập họ và tên"
+                value={values.fullName}
+                onChangeText={handleChange("fullName")}
+                onBlur={handleBlur("fullName")}
+              />
+              <FormErrorMessage error={errors.fullName} visible={touched.fullName} />
+
+              {/* Email Field */}
               <TextInput
                 name="email"
                 leftIconName="email"
-                placeholder="Enter email"
+                placeholder="Nhập email"
                 autoCapitalize="none"
                 keyboardType="email-address"
                 textContentType="emailAddress"
-                autoFocus={true}
                 value={values.email}
                 onChangeText={handleChange("email")}
                 onBlur={handleBlur("email")}
               />
               <FormErrorMessage error={errors.email} visible={touched.email} />
+
+              {/* Phone Field */}
+              <TextInput
+                name="phone"
+                leftIconName="phone"
+                placeholder="Nhập số điện thoại"
+                keyboardType="phone-pad"
+                value={values.phone}
+                onChangeText={handleChange("phone")}
+                onBlur={handleBlur("phone")}
+              />
+              <FormErrorMessage error={errors.phone} visible={touched.phone} />
+
+              {/* Address Field */}
+              <TextInput
+                name="address"
+                leftIconName="home"
+                placeholder="Nhập địa chỉ"
+                value={values.address}
+                onChangeText={handleChange("address")}
+                onBlur={handleBlur("address")}
+              />
+              <FormErrorMessage error={errors.address} visible={touched.address} />
+
+              {/* Password Field */}
               <TextInput
                 name="password"
                 leftIconName="key-variant"
-                placeholder="Enter password"
+                placeholder="Nhập mật khẩu"
                 autoCapitalize="none"
                 autoCorrect={false}
                 secureTextEntry={passwordVisibility}
@@ -103,10 +155,12 @@ export const SignupScreen = ({ navigation }) => {
                 error={errors.password}
                 visible={touched.password}
               />
+
+              {/* Confirm Password Field */}
               <TextInput
                 name="confirmPassword"
                 leftIconName="key-variant"
-                placeholder="Enter password"
+                placeholder="Nhập lại mật khẩu"
                 autoCapitalize="none"
                 autoCorrect={false}
                 secureTextEntry={confirmPasswordVisibility}
@@ -121,13 +175,15 @@ export const SignupScreen = ({ navigation }) => {
                 error={errors.confirmPassword}
                 visible={touched.confirmPassword}
               />
-              {/* Display Screen Error Mesages */}
+
+              {/* Display Screen Error Messages */}
               {errorState !== "" ? (
                 <FormErrorMessage error={errorState} visible={true} />
               ) : null}
-              {/* Signup button */}
+
+              {/* Signup Button */}
               <Button style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Signup</Text>
+                <Text style={styles.buttonText}>Đăng ký</Text>
               </Button>
             </>
           )}
@@ -136,13 +192,14 @@ export const SignupScreen = ({ navigation }) => {
         <Button
           style={styles.borderlessButtonContainer}
           borderless
-          title={"Already have an account?"}
+          title={"Bạn đã có tài khoản?"}
           onPress={() => navigation.navigate("Login")}
         />
       </KeyboardAwareScrollView>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

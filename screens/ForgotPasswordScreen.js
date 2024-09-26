@@ -11,16 +11,16 @@ export const ForgotPasswordScreen = ({navigation}) => {
   const [errorState, setErrorState] = useState("");
   const handleSendPasswordResetEmail = (values) => {
     const { email } = values;
-    // auth()
-    //   .
       sendPasswordResetEmail(auth,email)
       .then(() => {
-        console.log("Success: Password Reset Email sent.");
-        Alert.alert("Success","Password Reset Email sent.");
+        console.log("Thành công: Link tạo mới mật khẩu đã được gửi qua email.");
+        Alert.alert("Thành công","Link tạo mới mật khẩu đã được gửi qua email.");
       })
       .catch((error) => {
-        Alert.alert("Error",error.message);
-        setErrorState(error.message)
+        //Alert.alert("Error",error.message);
+        //setErrorState(error.message)
+        setErrorState('Đã có lỗi xảy ra! Hãy thử lại.')
+        console.log(error)
 
       }
       );
@@ -28,7 +28,7 @@ export const ForgotPasswordScreen = ({navigation}) => {
   return (
     <View isSafe style={styles.container}>
       <View style={styles.innerContainer}>
-        <Text style={styles.screenTitle}>Reset your password</Text>
+        <Text style={styles.screenTitle}>Quên mật khẩu</Text>
       </View>
       <Formik
         initialValues={{ email: "" }}
@@ -48,7 +48,7 @@ export const ForgotPasswordScreen = ({navigation}) => {
             <TextInput
               name="email"
               leftIconName="email"
-              placeholder="Enter email"
+              placeholder="Nhập email"
               autoCapitalize="none"
               keyboardType="email-address"
               textContentType="emailAddress"
@@ -63,7 +63,7 @@ export const ForgotPasswordScreen = ({navigation}) => {
             ) : null}
             {/* Password Reset Send Email button */}
             <Button style={styles.button} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>Send Reset Email</Text>
+              <Text style={styles.buttonText}>Gửi email xác nhận</Text>
             </Button>
           </>
         )}
@@ -72,7 +72,7 @@ export const ForgotPasswordScreen = ({navigation}) => {
       <Button
         style={styles.borderlessButtonContainer}
         borderless
-        title={"Go back to Login"}
+        title={"Trở lại trang đăng nhập"}
         onPress={() => navigation.navigate('Login')}
       />
     </View>

@@ -51,18 +51,19 @@ const login = async (dispatch, email, password) => {
         const response = await signInWithEmailAndPassword(auth, email, password)
 
         // Lấy tài liệu từ collection "users" nơi email khớp với tài khoản
-        const q = query(collection(db, "users"), where("email", "==", email))
+        const q = query(collection(db, "USERS"), where("email", "==", email))
         const querySnapshot = await getDocs(q)
 
         // Kiểm tra nếu tìm thấy người dùng
-        // if (!querySnapshot.empty) {
+        if (!querySnapshot.empty) {
             const userData = querySnapshot.docs[0].data()
             dispatch({ type: "USER_LOGIN", value: userData })
-        // } else {
-        //     Alert.alert('Thông báo', 'Không tìm thấy thông tin người dùng.')
-        // }
+        } else {
+            Alert.alert('Thông báo', 'Không tìm thấy thông tin người dùng.')
+        }
     } catch (e) {
         Alert.alert('Thông báo', 'Sai email hoặc password')
+        console.log("Lỗi khi đăng nhập:", e)
     }
 }
 

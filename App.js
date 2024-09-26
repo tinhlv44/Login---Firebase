@@ -9,8 +9,8 @@ import { doc, getDoc, setDoc } from "firebase/firestore"; // Import các hàm t�
 const App = () => {
     const admin = {
         fullName: "Admin",
-        email: "vanhuudhsp@gmail.com",
-        password: "12345666",
+        email: "admin@gmail.com",
+        password: "Admin@44",
         phone: "0913131732",
         address: "Bình Dương",
         role: "admin"
@@ -33,10 +33,10 @@ const App = () => {
                     // Lưu thông tin admin vào Firestore
                     await setDoc(adminDocRef, admin);
 
-                    console.log("Add new account admin");
+                    console.log("Đã tạo 1 tài khoản admin");
                 }
             } catch (error) {
-                console.error("Error creating admin account:", error);
+                console.error("Lỗi khi tạo tài khoản admin:", error);
             }
         };
 
@@ -44,11 +44,11 @@ const App = () => {
     }, []);
 
     return (
-        <MyContextControllerProvider>
-            <NavigationContainer>
                 <Router />
-            </NavigationContainer>
-        </MyContextControllerProvider>
+        // <MyContextControllerProvider>
+        //     <NavigationContainer>
+        //     </NavigationContainer>
+        // </MyContextControllerProvider>
     );
 };
 
