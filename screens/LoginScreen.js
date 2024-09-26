@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, StyleSheet } from "react-native";
 import { Formik } from "formik";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scrollview";
@@ -8,21 +8,36 @@ import { Images, Colors } from "../config";
 import { useTogglePasswordVisibility } from "../hooks";
 import { loginValidationSchema } from "../utils";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { login, useMyContextController } from "../store";
 export const LoginScreen = ({navigation}) => {
   const [errorState, setErrorState] = useState("");
   const { passwordVisibility, handlePasswordVisibility, rightIcon } =
     useTogglePasswordVisibility();
-  const handleLogin = (values) => {
+    const [controller, dispatch] = useMyContextController()
+    const { userLogin } = controller
+  const handleLogin = async (values) => {
     const { email, password } = values;
-    // auth()
-    //   .
+    //await login(dispatch, email, password);  // Gọi hàm login với dispatch và thông tin đăng nhập
       signInWithEmailAndPassword(auth, email, password)
       .then(({ user }) => console.log(user))
       .then(
         () =>  navigation.navigate('Home')
       )
-      .catch((error) => setErrorState(error.message));
+      .catch((error) => setErrorState(
+        //error.message
+        'Incorrect email or password'
+        ));
   };
+//   useEffect(() => {
+//     //console.log(userLogin)
+//     if (userLogin != null) {
+//         if (userLogin.role === "admin") {
+//             navigation.navigate("Admin")
+//         } else if (userLogin.role === "customer") {
+//             navigation.navigate("Customer")
+//         }
+//     }
+// }, [userLogin])
   return (
     <>
       <View isSafe style={styles.container}>

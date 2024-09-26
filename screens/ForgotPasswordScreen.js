@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text } from "react-native";
+import { Alert, StyleSheet, Text } from "react-native";
 import { Formik } from "formik";
 //import auth from "@react-native-firebase/auth";
 import {auth} from '../firebaseConfig'
@@ -16,8 +16,14 @@ export const ForgotPasswordScreen = ({navigation}) => {
       sendPasswordResetEmail(auth,email)
       .then(() => {
         console.log("Success: Password Reset Email sent.");
+        Alert.alert("Success","Password Reset Email sent.");
       })
-      .catch((error) => setErrorState(error.message));
+      .catch((error) => {
+        Alert.alert("Error",error.message);
+        setErrorState(error.message)
+
+      }
+      );
   };
   return (
     <View isSafe style={styles.container}>

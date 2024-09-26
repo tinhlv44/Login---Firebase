@@ -14,12 +14,21 @@ export const HomeScreen = ({navigation}) => {
   };
   return (
     <View style={styles.container}>
+      <View style={styles.btn}>
+
       <Button title="Sign Out" onPress={handleLogout} />
+      </View>
     </View>
   );
 };
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems:'center',
+    backgroundColor:'white',
+    justifyContent:'center'
   },
+btn:{
+  width:'50%'
+}
 });

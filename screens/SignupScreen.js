@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { Text, StyleSheet } from "react-native";
 import { Formik } from "formik";
-import {auth} from '../firebaseConfig'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from "../firebaseConfig";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scrollview";
 import { View, TextInput, Logo, Button, FormErrorMessage } from "../components";
 import { Images, Colors } from "../config";
 import { useTogglePasswordVisibility } from "../hooks";
 import { signupValidationSchema } from "../utils";
-export const SignupScreen =  ({ navigation })  => {
+export const SignupScreen = ({ navigation }) => {
   const [errorState, setErrorState] = useState("");
   const {
     passwordVisibility,
@@ -20,14 +23,27 @@ export const SignupScreen =  ({ navigation })  => {
   } = useTogglePasswordVisibility();
   const handleSignup = async (values) => {
     const { email, password } = values;
-    // auth()
-    //   .
-      createUserWithEmailAndPassword(auth,email, password)
-      .then(
-        ()=>navigation.navigate('Login')
-        )        
-      .catch((error) => setErrorState(error.message));
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      navigation.navigate("Home");
+    } catch (error) {
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          setErrorState("This email is already in use.");
+          break;
+        case "auth/weak-password":
+          setErrorState("Password is too weak, must be at least 6 characters.");
+          break;
+        case "auth/invalid-email":
+          setErrorState("Invalid email format.");
+          break;
+        default:
+          setErrorState("An error occurred during sign-up.");
+          break;
+      }
+    }
   };
+
   return (
     <View isSafe style={styles.container}>
       <KeyboardAwareScrollView enableOnAndroid={true}>
@@ -121,7 +137,7 @@ export const SignupScreen =  ({ navigation })  => {
           style={styles.borderlessButtonContainer}
           borderless
           title={"Already have an account?"}
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate("Login")}
         />
       </KeyboardAwareScrollView>
     </View>
