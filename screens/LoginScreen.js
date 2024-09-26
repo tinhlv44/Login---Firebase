@@ -40,9 +40,9 @@ export const LoginScreen = ({ navigation }) => {
   useEffect(() => {
     if (userLogin) {
       if (userLogin.role === "admin") {
-        navigation.navigate("Admin");
+        //navigation.navigate("Admin");
       } else if (userLogin.role === "customer") {
-        navigation.navigate("Customer");
+        //navigation.navigate("Customer");
       }
     }
   }, [userLogin]);

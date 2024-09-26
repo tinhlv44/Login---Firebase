@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Image, View, StyleSheet, FlatList, TouchableOpacity, Alert, Text } from "react-native";
 import { IconButton, Card, Button } from "react-native-paper";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, addDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { format } from 'date-fns';
 
 const ServiceCustomer = ({ navigation }) => {
     const [services, setServices] = useState([]);
@@ -41,9 +42,30 @@ const ServiceCustomer = ({ navigation }) => {
         return selectedServices.reduce((total, service) => total + service.price, 0);
     };
 
-    const handlePayment = () => {
-        // Xử lý thanh toán ở đây
-        Alert.alert("Thông báo", "Chức năng thanh toán chưa được triển khai.");
+    const handlePayment = async () => {
+        try {
+            // Tạo đối tượng thông tin thanh toán
+            const transaction = {
+                services: selectedServices.map(service => ({
+                    id: service.id,
+                    name: service.name,
+                    price: service.price
+                })),
+                totalPrice: calculateTotalPrice(),
+                date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+            };
+
+            // Thêm thông tin thanh toán vào Firestore
+            await addDoc(collection(db, "transactions"), transaction);
+
+            // Xóa các dịch vụ đã chọn sau khi thanh toán
+            setSelectedServices([]);
+
+            Alert.alert("Thông báo", "Thanh toán thành công!");
+        } catch (error) {
+            console.error("Error adding transaction: ", error);
+            Alert.alert("Lỗi", "Có lỗi xảy ra khi thực hiện thanh toán.");
+        }
     };
 
     const renderItem = ({ item }) => {

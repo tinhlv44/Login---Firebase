@@ -24,7 +24,7 @@ const RouterService = () => {
                 //headerRight: (props) => <IconButton icon="account" />
             }}
         >
-            <Stack.Screen name="Services" component={Services} />
+            <Stack.Screen name="Services" component={Services} options={{headerShown:false}} />
             <Stack.Screen name="AddNewService" component={AddNewService} />
             <Stack.Screen name="ServiceDetail" component={ServiceDetail} />
         </Stack.Navigator>

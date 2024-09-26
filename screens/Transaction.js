@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert } from "reac
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { Card, Button } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { format } from "date-fns";
 
 const TransactionScreen = () => {
     const [transactions, setTransactions] = useState([]);
@@ -14,7 +16,8 @@ const TransactionScreen = () => {
         const unsubscribe = onSnapshot(transactionsCollection, (querySnapshot) => {
             const transactionsList = querySnapshot.docs.map(doc => ({
                 id: doc.id,
-                ...doc.data()
+                ...doc.data(),
+                //formattedDate: doc.data().date ? format(new Date(doc.data().date.seconds * 1000), 'yyyy-MM-dd HH:mm:ss') : 'N/A'
             }));
             setTransactions(transactionsList);
             setLoading(false);
@@ -30,21 +33,33 @@ const TransactionScreen = () => {
     const renderItem = ({ item }) => (
         <Card style={styles.card}>
             <Card.Content>
-                <Text style={styles.transactionDate}>{new Date(item.date.seconds * 1000).toLocaleDateString()}</Text>
-                <Text style={styles.transactionDescription}>{item.description}</Text>
-                <Text style={styles.transactionAmount}>
-                    {item.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                <Text style={styles.transactionDate}>
+                    {/* {item.date || "N/A"} */}
+                    {item.formattedDate || "N/A"}
+                </Text>
+                <View style={styles.servicesContainer}>
+                    {item.services.map(service => (
+                        <View key={service.id} style={styles.serviceRow}>
+                            <Text style={styles.transactionName}>{service.name}</Text>
+                            <Text style={styles.transactionAmount}>
+                                {service.price ? service.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : "N/A"}
+                            </Text>
+                        </View>
+                    ))}
+                </View>
+                <Text style={styles.totalAmount}>
+                    Tổng tiền: {item.totalPrice ? item.totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : "N/A"}
                 </Text>
             </Card.Content>
         </Card>
     );
 
     const calculateTotalSpent = () => {
-        return transactions.reduce((total, transaction) => total + transaction.amount, 0);
+        return transactions.reduce((total, transaction) => total + (transaction.totalPrice || 0), 0);
     };
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Danh sách giao dịch</Text>
 
             {loading ? (
@@ -60,17 +75,17 @@ const TransactionScreen = () => {
                         <Text style={styles.totalText}>
                             Tổng chi tiêu: {calculateTotalSpent().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                         </Text>
-                        <Button
+                        {/* <Button
                             mode="contained"
                             style={styles.refreshButton}
                             onPress={() => setLoading(true)}
                         >
                             Làm mới
-                        </Button>
+                        </Button> */}
                     </View>
                 </>
             )}
-        </View>
+        </SafeAreaView>
     );
 };
 
@@ -95,14 +110,30 @@ const styles = StyleSheet.create({
     transactionDate: {
         fontSize: 16,
         color: '#555',
+        marginBottom: 8,
     },
-    transactionDescription: {
-        fontSize: 18,
-        fontWeight: 'bold',
+    servicesContainer: {
+        marginBottom: 8,
+    },
+    serviceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 4,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    transactionName: {
+        fontSize: 16,
+        color: '#333',
     },
     transactionAmount: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#ff5722',
+    },
+    totalAmount: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
         marginTop: 8,
     },
     summaryContainer: {

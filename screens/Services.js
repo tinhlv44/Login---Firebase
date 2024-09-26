@@ -3,6 +3,7 @@ import { Image, View, StyleSheet, FlatList, TouchableOpacity, Alert } from "reac
 import { IconButton, Text, Card } from "react-native-paper";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig"; // Import db từ firebaseConfig
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Services = ({ navigation }) => {
     const [services, setServices] = useState([]);
@@ -45,11 +46,11 @@ const Services = ({ navigation }) => {
     );
 
     return (
-        <View style={styles.container}>
-            <Image
+        <SafeAreaView style={styles.container}>
+            {/* <Image
                 source={require("../assets/logo.png")}
                 style={styles.logo}
-            />
+            /> */}
             
             <View style={styles.header}>
                 <Text style={styles.title}>
@@ -72,7 +73,7 @@ const Services = ({ navigation }) => {
                     keyExtractor={(item) => item.id}
                 />
             )}
-        </View>
+        </SafeAreaView>
     );
 };
 

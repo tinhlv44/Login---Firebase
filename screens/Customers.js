@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, 
 import { Card } from "react-native-paper";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const CustomersScreen = ({ navigation }) => {
     const [customers, setCustomers] = useState([]);
@@ -42,7 +43,7 @@ const CustomersScreen = ({ navigation }) => {
     );
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Danh sách khách hàng</Text>
 
             {loading ? (
@@ -54,7 +55,7 @@ const CustomersScreen = ({ navigation }) => {
                     keyExtractor={(item) => item.id}
                 />
             )}
-        </View>
+        </SafeAreaView>
     );
 };
 
