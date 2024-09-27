@@ -4,6 +4,7 @@ import AddNewService from '../screens/AddNewService';
 import ServiceDetail from '../screens/ServiceDetail';
 import { useMyContextController } from '../store';
 import IconButton from 'react-native-paper';
+import EditService from '../screens/EditService';
 
 const Stack = createStackNavigator();
 
@@ -11,7 +12,7 @@ const RouterService = () => {
     const [controller, dispatch] = useMyContextController();
     const { userLogin } = controller;
 
-    console.log(userLogin)
+    //console.log(userLogin)
     return (
         <Stack.Navigator
             initialRouteName="Services"
@@ -27,6 +28,7 @@ const RouterService = () => {
             <Stack.Screen name="Services" component={Services} options={{headerShown:false}} />
             <Stack.Screen name="AddNewService" component={AddNewService} />
             <Stack.Screen name="ServiceDetail" component={ServiceDetail} />
+            <Stack.Screen name="EditService" component={EditService} />
         </Stack.Navigator>
     );
 };

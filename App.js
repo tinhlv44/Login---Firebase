@@ -5,6 +5,7 @@ import Router from "./routers/Router";
 import { auth, db } from "./firebaseConfig"; // Import auth và db từ firebaseConfig
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore"; // Import các hàm từ Firestore
+import { MenuProvider } from "react-native-popup-menu";
 
 const App = () => {
     const admin = {
@@ -44,7 +45,10 @@ const App = () => {
     }, []);
 
     return (
-                <Router />
+        <MenuProvider>
+
+            <Router />
+        </MenuProvider>
         // <MyContextControllerProvider>
         //     <NavigationContainer>
         //     </NavigationContainer>

@@ -35,11 +35,10 @@ const CustomerDetailScreen = ({ route }) => {
                 <ActivityIndicator size="large" color="#ff5722" />
             ) : customer ? (
                 <View style={styles.detailContainer}>
-                    <Text style={styles.detailTitle}>Thông tin khách hàng</Text>
-                    <Text style={styles.detailText}>Họ tên: {customer.fullName}</Text>
-                    <Text style={styles.detailText}>Email: {customer.email}</Text>
-                    <Text style={styles.detailText}>Số điện thoại: {customer.phone}</Text>
-                    <Text style={styles.detailText}>Địa chỉ: {customer.address}</Text>
+                    <Text style={styles.detailText}><Text style={styles.bold}>Họ tên:</Text> {customer.fullName}</Text>
+                    <Text style={styles.detailText}><Text style={styles.bold}>Email:</Text> {customer.email}</Text>
+                    <Text style={styles.detailText}><Text style={styles.bold}>Số điện thoại:</Text> {customer.phone}</Text>
+                    <Text style={styles.detailText}><Text style={styles.bold}>Địa chỉ:</Text> {customer.address}</Text>
                 </View>
             ) : (
                 <Text>Không có dữ liệu để hiển thị.</Text>
@@ -55,10 +54,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f9f9f9',
     },
     detailContainer: {
-        padding: 16,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        elevation: 3,
+        padding: 8,
     },
     detailTitle: {
         fontSize: 24,
@@ -68,6 +64,9 @@ const styles = StyleSheet.create({
     detailText: {
         fontSize: 18,
         marginBottom: 8,
+    },
+    bold: {
+        fontWeight: 'bold',
     },
 });
 

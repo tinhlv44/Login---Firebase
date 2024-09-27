@@ -108,9 +108,9 @@ export const LoginScreen = ({ navigation }) => {
               />
 
               {/* Hiển thị lỗi */}
-              {errorState !== "" ? (
+              {/* {errorState !== "" ? (
                 <FormErrorMessage error={errorState} visible={true} />
-              ) : null}
+              ) : null} */}
 
               {/* Nút Đăng nhập */}
               <Button style={styles.button} onPress={handleSubmit}>

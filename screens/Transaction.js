@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert } from "react-native";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc } from "firebase/firestore"; // Thêm doc, getDoc để lấy dữ liệu từ Firestore
 import { db } from "../firebaseConfig";
-import { Card, Button } from "react-native-paper";
+import { Card } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { format } from "date-fns";
 
@@ -10,17 +10,51 @@ const TransactionScreen = () => {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Hàm lấy thông tin user dựa trên customerId
+    const fetchCustomerName = async (customerId) => {
+        try {
+            // Lấy tài liệu người dùng từ Firestore
+            const userDoc = await getDoc(doc(db, "USERS", customerId));
+    
+            // Kiểm tra xem tài liệu có tồn tại không
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                return userData.fullName || "Unknown"; // Trả về fullName hoặc "Unknown" nếu không có fullName
+            } else {
+                console.error(`No user found for customerId: ${customerId}`);
+                return "Unknown"; // Nếu không tìm thấy người dùng, trả về "Unknown"
+            }
+        } catch (error) {
+            console.error("Error fetching customer name:", error);
+            return "Unknown"; // Trả về "Unknown" trong trường hợp có lỗi
+        }
+    };
+    
+
+    // Hàm để lấy dữ liệu giao dịch và tên khách hàng
+    const fetchTransactionsWithCustomerNames = async (querySnapshot) => {
+        const transactionsList = await Promise.all(
+            querySnapshot.docs.map(async (doc) => {
+                const transactionData = doc.data();
+                const customerName = transactionData.customer && await fetchCustomerName(transactionData.customer); // Lấy tên khách hàng từ bảng USERS
+                return {
+                    id: doc.id,
+                    ...transactionData,
+                    customerName: customerName || 'N?A', // Thêm tên khách hàng vào dữ liệu giao dịch
+                    formattedDate: transactionData.date
+                };
+            })
+        );
+        setTransactions(transactionsList);
+        setLoading(false);
+    };
+
     useEffect(() => {
         const transactionsCollection = collection(db, "transactions");
 
-        const unsubscribe = onSnapshot(transactionsCollection, (querySnapshot) => {
-            const transactionsList = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                //formattedDate: doc.data().date ? format(new Date(doc.data().date.seconds * 1000), 'yyyy-MM-dd HH:mm:ss') : 'N/A'
-            }));
-            setTransactions(transactionsList);
-            setLoading(false);
+        const unsubscribe = onSnapshot(transactionsCollection, async (querySnapshot) => {
+            setLoading(true);
+            await fetchTransactionsWithCustomerNames(querySnapshot); // Gọi hàm để lấy dữ liệu giao dịch cùng với tên khách hàng
         }, (error) => {
             console.error("Error fetching transactions: ", error);
             Alert.alert("Lỗi", "Có lỗi xảy ra khi lấy dữ liệu giao dịch.");
@@ -30,29 +64,37 @@ const TransactionScreen = () => {
         return () => unsubscribe();
     }, []);
 
-    const renderItem = ({ item }) => (
-        <Card style={styles.card}>
-            <Card.Content>
-                <Text style={styles.transactionDate}>
-                    {/* {item.date || "N/A"} */}
-                    {item.formattedDate || "N/A"}
-                </Text>
-                <View style={styles.servicesContainer}>
-                    {item.services.map(service => (
-                        <View key={service.id} style={styles.serviceRow}>
-                            <Text style={styles.transactionName}>{service.name}</Text>
-                            <Text style={styles.transactionAmount}>
-                                {service.price ? service.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : "N/A"}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
-                <Text style={styles.totalAmount}>
-                    Tổng tiền: {item.totalPrice ? item.totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : "N/A"}
-                </Text>
-            </Card.Content>
-        </Card>
-    );
+    const renderItem = ({ item }) => {
+    
+        return (
+            <Card style={styles.card}>
+                <Card.Content>
+                    <View style={{flexDirection:'row-reverse', justifyContent:'space-between'}}>
+                        <Text style={styles.transactionDate}>
+                            {item.date.toString()}
+                        </Text>
+                        <Text style={styles.transactionDate}>
+                            {item.customerName || "N/A"}
+                        </Text>
+                    </View>
+                    <View style={styles.servicesContainer}>
+                        {item.services.map(service => (
+                            <View key={service.id} style={styles.serviceRow}>
+                                <Text style={styles.transactionName}>{service.name}</Text>
+                                <Text style={styles.transactionAmount}>
+                                    {service.price ? service.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : "N/A"}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                    <Text style={styles.totalAmount}>
+                        Tổng tiền: {item.totalPrice ? item.totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : "N/A"}
+                    </Text>
+                </Card.Content>
+            </Card>
+        );
+    };
+    
 
     const calculateTotalSpent = () => {
         return transactions.reduce((total, transaction) => total + (transaction.totalPrice || 0), 0);
@@ -67,21 +109,15 @@ const TransactionScreen = () => {
             ) : (
                 <>
                     <FlatList
-                        data={transactions}
+                        data={transactions.reverse()}
                         renderItem={renderItem}
                         keyExtractor={(item) => item.id}
+                        
                     />
                     <View style={styles.summaryContainer}>
                         <Text style={styles.totalText}>
-                            Tổng chi tiêu: {calculateTotalSpent().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                            Tổng: {calculateTotalSpent().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                         </Text>
-                        {/* <Button
-                            mode="contained"
-                            style={styles.refreshButton}
-                            onPress={() => setLoading(true)}
-                        >
-                            Làm mới
-                        </Button> */}
                     </View>
                 </>
             )}
@@ -147,10 +183,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#333',
-    },
-    refreshButton: {
-        marginTop: 16,
-        backgroundColor: '#ff5722',
     },
 });
 

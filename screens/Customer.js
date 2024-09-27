@@ -6,13 +6,18 @@ const Tab = createMaterialBottomTabNavigator()
 
 const Customer = () => {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      activeColor="#ffffff"  // Màu của icon khi chọn
+      inactiveColor="#f0edf6"  // Màu của icon khi không chọn
+      barStyle={{ backgroundColor: '#e91e63' }}  // Màu nền của thanh tab
+    >
       <Tab.Screen name="ServiceCustomer" component={ServiceCustomer} options={{
-        title: "Home",
+        title: "Trang chủ",
         tabBarIcon: "home"
       }} />
       <Tab.Screen name="Setting" component={Setting} options={{
-        tabBarIcon: "cog"
+        tabBarIcon: "cog",
+        title: "Cài đật"
       }} />
     </Tab.Navigator>
   )

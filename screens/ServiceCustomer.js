@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Image, View, StyleSheet, FlatList, TouchableOpacity, Alert, Text } from "react-native";
-import { IconButton, Card, Button } from "react-native-paper";
+import { IconButton, Card} from "react-native-paper";
 import { collection, onSnapshot, addDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { format } from 'date-fns';
+import { useMyContextController } from "../store";
+import { Button } from "../components";
+import { Colors } from "../config";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ServiceCustomer = ({ navigation }) => {
     const [services, setServices] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const [controller, dispatch] = useMyContextController();
+    const { uid } = controller;
     useEffect(() => {
         const servicesCollection = collection(db, "services");
 
@@ -51,8 +57,9 @@ const ServiceCustomer = ({ navigation }) => {
                     name: service.name,
                     price: service.price
                 })),
+                customer: uid,
                 totalPrice: calculateTotalPrice(),
-                date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                date: format(new Date(), 'yyyy-MM-dd HH:mm:ss').toString(),
             };
 
             // Thêm thông tin thanh toán vào Firestore
@@ -88,7 +95,7 @@ const ServiceCustomer = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Image
                 source={require("../assets/logo.png")}
                 style={styles.logo}
@@ -112,15 +119,11 @@ const ServiceCustomer = ({ navigation }) => {
                 <Text style={styles.totalText}>
                     Tổng tiền: {calculateTotalPrice().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                 </Text>
-                <Button
-                    mode="contained"
-                    style={styles.paymentButton}
-                    onPress={handlePayment}
-                >
-                    Thanh toán
+                <Button style={styles.button} onPress={handlePayment}>
+                    <Text style={styles.buttonText}>Thanh toán</Text>
                 </Button>
             </View>
-        </View>
+        </SafeAreaView>
     );
 };
 
@@ -175,10 +178,20 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#333',
     },
-    paymentButton: {
-        marginTop: 16,
-        backgroundColor: '#ff5722',
-    }
+    button: {
+        width: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 8,
+        backgroundColor: Colors.orange,
+        padding: 10,
+        borderRadius: 8,
+      },
+      buttonText: {
+        fontSize: 20,
+        color: Colors.white,
+        fontWeight: "700",
+      },
 });
 
 export default ServiceCustomer;

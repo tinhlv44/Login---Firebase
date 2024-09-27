@@ -1,12 +1,12 @@
 import React from "react";
 import { View, StyleSheet, ScrollView, Alert } from "react-native";
-import {  Text, TextInput } from "react-native-paper";
+import { Text, TextInput } from "react-native-paper";
 import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { db } from "../firebaseConfig"; // Import db từ firebaseConfig
-import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { Button } from "../components";
+import { doc, updateDoc, Timestamp } from "firebase/firestore";
 import { Colors } from "../config";
+import { Button } from "../components";
 
 // Validation schema with Yup
 const validationSchema = Yup.object().shape({
@@ -16,31 +16,31 @@ const validationSchema = Yup.object().shape({
         .min(10000, "Giá phải ít nhất 10,000")
 });
 
-const AddNewService = ({ navigation }) => {
+const EditService = ({ route, navigation }) => {
+    const { service } = route.params; // Lấy thông tin dịch vụ từ params
 
-    const handleAddService = async (values) => {
+    const handleUpdateService = async (values) => {
         try {
-            await addDoc(collection(db, "services"), {
+            const serviceRef = doc(db, "services", service.id);
+            await updateDoc(serviceRef, {
                 name: values.name,
                 price: parseFloat(values.price),
-                createdBy: "Admin", // Hoặc thay đổi theo thông tin người dùng hiện tại
-                createdAt: Timestamp.fromDate(new Date()),
                 updatedAt: Timestamp.fromDate(new Date()),
             });
-            Alert.alert("Thành công", "Dịch vụ đã được thêm thành công");
-            navigation.goBack(); // Quay lại màn hình trước đó
+            Alert.alert("Thành công", "Dịch vụ đã được cập nhật thành công");
+            navigation.navigate('Services'); // Quay lại màn hình trước đó
         } catch (error) {
-            console.error("Lỗi khi thêm tài liệu: ", error);
-            Alert.alert("Lỗi", "Đã xảy ra lỗi khi thêm dịch vụ");
+            console.error("Lỗi khi cập nhật tài liệu: ", error);
+            Alert.alert("Lỗi", "Đã xảy ra lỗi khi cập nhật dịch vụ");
         }
     };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Formik
-                initialValues={{ name: "", price: "" }}
+                initialValues={{ name: service.name, price: service.price.toString() }}
                 validationSchema={validationSchema}
-                onSubmit={handleAddService}
+                onSubmit={handleUpdateService}
             >
                 {({ handleChange, handleBlur, handleSubmit, values }) => (
                     <View>
@@ -65,7 +65,7 @@ const AddNewService = ({ navigation }) => {
                         />
                         <ErrorMessage name="price" component={Text} style={styles.errorText} />
                         <Button style={styles.button} onPress={handleSubmit}>
-                            <Text style={styles.buttonText}>Thêm Dịch Vụ</Text>
+                            <Text style={styles.buttonText}>Cập nhật Dịch Vụ</Text>
                         </Button>
                     </View>
                 )}
@@ -110,4 +110,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default AddNewService;
+export default EditService;

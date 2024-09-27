@@ -4,8 +4,10 @@ import { IconButton, Text, Card } from "react-native-paper";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig"; // Import db từ firebaseConfig
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 
-const Services = ({ navigation }) => {
+const Services = () => {
+    const navigation = useNavigation()
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
 

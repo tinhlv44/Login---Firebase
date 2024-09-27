@@ -28,7 +28,10 @@ const CustomersScreen = ({ navigation }) => {
         return () => unsubscribe();
     }, []);
 
-    const renderItem = ({ item }) => (
+    const renderItem = ({ item }) => 
+    {
+        if (item.role !== 'customer') return (<></>)
+        return (
         <TouchableOpacity
             onPress={() => navigation.navigate("CustomerDetail", { customerId: item.id })}
             style={styles.card}
@@ -41,6 +44,8 @@ const CustomersScreen = ({ navigation }) => {
             </Card>
         </TouchableOpacity>
     );
+    }
+    
 
     return (
         <SafeAreaView style={styles.container}>

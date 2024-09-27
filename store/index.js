@@ -11,18 +11,20 @@ MyContext.displayName = 'MyAppContext'
 const reducer = (state, action) => {
     switch (action.type) {
         case "USER_LOGIN":
-            return { ...state, userLogin: action.value }
+            return { ...state, userLogin: action.value, uid: action.uid } // Lưu uid khi login
         case "LOGOUT":
-            return { ...state, userLogin: null }
+            return { ...state, userLogin: null, uid: null } // Xoá uid khi logout
         default:
-            return state  // Không ném lỗi trong reducer, chỉ trả về state hiện tại
+            return state
     }
 }
+
 // Định nghĩa MyContextControllerProvider
 const MyContextControllerProvider = ({ children }) => {
     // Khởi tạo state
     const initialState = {
         userLogin: null,
+        uid: null,  // Thêm uid vào state
         services: [],
     }
     const [controller, dispatch] = useReducer(reducer, initialState)
@@ -49,15 +51,16 @@ const login = async (dispatch, email, password) => {
     try {
         // Đăng nhập với Firebase Auth
         const response = await signInWithEmailAndPassword(auth, email, password)
+        const uid = response.user.uid // Lấy uid của người dùng
 
-        // Lấy tài liệu từ collection "users" nơi email khớp với tài khoản
+        // Lấy tài liệu từ collection "USERS" nơi email khớp với tài khoản
         const q = query(collection(db, "USERS"), where("email", "==", email))
         const querySnapshot = await getDocs(q)
 
         // Kiểm tra nếu tìm thấy người dùng
         if (!querySnapshot.empty) {
             const userData = querySnapshot.docs[0].data()
-            dispatch({ type: "USER_LOGIN", value: userData })
+            dispatch({ type: "USER_LOGIN", value: userData, uid }) // Lưu uid và userData
         } else {
             Alert.alert('Thông báo', 'Không tìm thấy thông tin người dùng.')
         }

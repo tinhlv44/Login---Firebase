@@ -5,6 +5,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 
 const ServiceDetail = () => {
     const route = useRoute();
@@ -14,15 +15,27 @@ const ServiceDetail = () => {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <TouchableOpacity onPress={handleDelete} style={{marginRight: 12}}>
-
-                    <MaterialIcons name="auto-delete" size={24} color="black" />
-                </TouchableOpacity>
-
-
+                <Menu>
+                    <MenuTrigger style={{ marginRight: 12 }}>
+                        <MaterialIcons name="more-vert" size={24} color="black" />
+                    </MenuTrigger>
+                    <MenuOptions>
+                        <MenuOption onSelect={() => handleEdit()}>
+                            <Text style={styles.menuOption}>Sửa</Text>
+                        </MenuOption>
+                        <MenuOption onSelect={() => handleDelete()}>
+                            <Text style={styles.menuOption}>Xóa</Text>
+                        </MenuOption>
+                    </MenuOptions>
+                </Menu>
             ),
         });
     }, [navigation, service]);
+
+    const handleEdit = () => {
+        // Điều hướng đến trang chỉnh sửa dịch vụ
+        navigation.navigate('EditService', { service });
+    };
 
     const handleDelete = () => {
         Alert.alert(
@@ -59,7 +72,6 @@ const ServiceDetail = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Chi Tiết Dịch Vụ</Text>
             <View style={styles.detailContainer}>
                 <Text style={styles.label}>Tên Dịch Vụ:</Text>
                 <Text style={styles.value}>{service.name}</Text>
@@ -111,6 +123,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'red',
         textAlign: 'center',
+    },
+    menuOption: {
+        padding: 10,
+        fontSize: 16,
+        color: '#333',
     },
 });
 
